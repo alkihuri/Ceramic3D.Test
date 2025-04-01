@@ -72,8 +72,14 @@ public class DataSerachService : MonoBehaviour
 
         foreach (var spaceMatrix in data.space.matrices)
         {
-            float distance = Vector3.Distance(targetMatrix.ToUnityMatrix().GetPosition(), spaceMatrix.ToUnityMatrix().GetPosition()); // ну тут все печально
-            if (distance >= offsetMin && distance <= offsetMax)
+            float distance = Vector3.Distance(targetMatrix.ToUnityMatrix().GetPosition(), spaceMatrix.ToUnityMatrix().GetPosition()); // ну тут все печально просто срравниниваю по дистанции
+
+
+
+            // compare two matrix 
+
+            bool distanceCondition = distance >= offsetMin && distance <= offsetMax;
+            if (distanceCondition)
             {
                 closestMatrix = spaceMatrix;
                 closestMatrix.linkedCube.GetComponent<Renderer>().material.color = Color.green;
