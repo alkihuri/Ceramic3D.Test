@@ -37,17 +37,18 @@ public class DataSerachService : MonoBehaviour
         // Поиск данных
         Debug.Log("Data searched started");
 
-        float offset = 10f;
+        float offsetMin = 1f;
+        float offsetMax = 2f;
         resultMatrixDataArray.matrices = new List<MatrixData>();
         for (int i = 0; i < data.model.matrices.Count; i++)
         {
             MatrixData matrix = data.model.matrices[i];
-            MatrixData offsetedMatrix = matrix.DoOffset(offset);
+            MatrixData offsetedMatrix = matrix.DoOffset(offsetMin);
 
-            yield return SearchInSpace(offsetedMatrix, data, offset);
+            yield return SearchInSpace(offsetedMatrix, data, offsetMin, offsetMax);
 
 
-            float percent = (float)(i / data.space.matrices.Count);
+            float percent = (float)(i / data.model.matrices.Count);
             Debug.Log($"Data searched {percent * 100}%");
         }
 
@@ -65,15 +66,14 @@ public class DataSerachService : MonoBehaviour
     }
 
     [SerializeField] MatrixDataArray resultMatrixDataArray = new MatrixDataArray();
-    private IEnumerator SearchInSpace(MatrixData targetMatrix, Data data, float offset)
+    private IEnumerator SearchInSpace(MatrixData targetMatrix, Data data, float offsetMin, float offsetMax)
     {
-        float minDistance = offset;
         MatrixData closestMatrix = null;
 
         foreach (var spaceMatrix in data.space.matrices)
         {
             float distance = Vector3.Distance(targetMatrix.ToUnityMatrix().GetPosition(), spaceMatrix.ToUnityMatrix().GetPosition()); // ну тут все печально
-            if (distance <= minDistance)
+            if (distance >= offsetMin && distance <= offsetMax)
             {
                 closestMatrix = spaceMatrix;
                 closestMatrix.linkedCube.GetComponent<Renderer>().material.color = Color.green;
