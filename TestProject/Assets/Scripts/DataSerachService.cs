@@ -56,9 +56,11 @@ public class DataSerachService : MonoBehaviour
         float minDistance = float.MaxValue;
         MatrixData closestMatrix = null;
 
+        MatrixDataArray resultMatrixDataArray = new MatrixDataArray();
+
         foreach (var modelMatrix in data.space.matrices)
         {
-            float distance = Vector3.Distance(matrix.ToUnityMatrix().GetPosition(), modelMatrix.ToUnityMatrix().GetPosition());
+            float distance = Vector3.Distance(matrix.ToUnityMatrix().GetPosition(), modelMatrix.ToUnityMatrix().GetPosition()); // ну тут все печально
             if (distance < minDistance)
             {
                 minDistance = distance;
@@ -66,6 +68,8 @@ public class DataSerachService : MonoBehaviour
                 modelMatrix.linkedCube.GetComponent<Renderer>().material.color = Color.green;
                 yield return null;
                 Debug.DrawLine(matrix.ToUnityMatrix().GetPosition(), modelMatrix.ToUnityMatrix().GetPosition(), Color.yellow, 1f);
+
+                resultMatrixDataArray.matrices.Add(modelMatrix);
             }
             else
             {
@@ -75,6 +79,11 @@ public class DataSerachService : MonoBehaviour
 
         yield return null;
         Debug.Log($"Closest matrix to {matrix} is {closestMatrix} with distance {minDistance}");
+
+
+        string result = JsonUtility.ToJson(resultMatrixDataArray);
+
+        System.IO.File.WriteAllText("Assets/Streaming Assets/result.json", result);
 
     }
 }
