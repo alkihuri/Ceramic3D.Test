@@ -24,8 +24,8 @@ public class DataSerachService : MonoBehaviour
     {
 
         // sort data by magnitude of position 
-        //data.space.matrices.Sort((a, b) => a.ToUnityMatrix().GetPosition().magnitude.CompareTo(b.ToUnityMatrix().GetPosition().magnitude));
-        yield return null;
+        //data.space.matrices.Sort((a, b) => a.ToUnityMatrix().GetPosition().magnitude.CompareTo(b.ToUnityMatrix().GetPosition().magnitude)); 
+        float startTime = Time.unscaledTime;
 
         Debug.Log("Data sorted by magnitude of position");
 
@@ -36,44 +36,55 @@ public class DataSerachService : MonoBehaviour
         // Поиск данных
         Debug.Log("Data searched started");
 
-        float offset = 10f;
-
+        float offset = 1f;
+        resultMatrixDataArray.matrices = new List<MatrixData>();
         foreach (var matrix in data.space.matrices)
         {
             var offsetedMatrix = matrix.DoOffset(offset);
 
-            yield return SearchInSpace(offsetedMatrix, data);
+            yield return SearchInSpace(offsetedMatrix, data, offset);
             Debug.DrawLine(matrix.ToUnityMatrix().GetPosition(), offsetedMatrix.ToUnityMatrix().GetPosition(), Color.yellow, 1f);
+
+            float percent = (float)data.space.matrices.IndexOf(matrix) / data.space.matrices.Count;
+            Debug.Log($"Data searched {percent * 100}%");
         }
 
         yield return null;
 
+
+        string result = JsonUtility.ToJson(resultMatrixDataArray);
+
+        System.IO.File.WriteAllText("Assets/Streaming Assets/result.json", result);
+
+        float endTime = Time.unscaledTime;
+
+        Debug.Log($"Data searched finished in {endTime - startTime} seconds");
+
     }
 
-    private IEnumerator SearchInSpace(MatrixData matrix, Data data)
+    [SerializeField] MatrixDataArray resultMatrixDataArray = new MatrixDataArray();
+    private IEnumerator SearchInSpace(MatrixData matrix, Data data, float offset)
     {
         // search for the closest matrix in the model
-        float minDistance = float.MaxValue;
+        float minDistance = offset;
         MatrixData closestMatrix = null;
 
-        MatrixDataArray resultMatrixDataArray = new MatrixDataArray();
-
-        foreach (var modelMatrix in data.space.matrices)
+        foreach (var spaceMatrix in data.space.matrices)
         {
-            float distance = Vector3.Distance(matrix.ToUnityMatrix().GetPosition(), modelMatrix.ToUnityMatrix().GetPosition()); // ну тут все печально
+            float distance = Vector3.Distance(matrix.ToUnityMatrix().GetPosition(), spaceMatrix.ToUnityMatrix().GetPosition()); // ну тут все печально
             if (distance < minDistance)
             {
                 minDistance = distance;
-                closestMatrix = modelMatrix;
-                modelMatrix.linkedCube.GetComponent<Renderer>().material.color = Color.green;
+                closestMatrix = spaceMatrix;
+                spaceMatrix.linkedCube.GetComponent<Renderer>().material.color = Color.green;
                 yield return null;
-                Debug.DrawLine(matrix.ToUnityMatrix().GetPosition(), modelMatrix.ToUnityMatrix().GetPosition(), Color.yellow, 1f);
+                Debug.DrawLine(matrix.ToUnityMatrix().GetPosition(), spaceMatrix.ToUnityMatrix().GetPosition(), Color.yellow, 1f);
 
-                resultMatrixDataArray.matrices.Add(modelMatrix);
+                resultMatrixDataArray.matrices.Add(spaceMatrix);
             }
             else
             {
-                matrix?.linkedCube?.SetActive(false);
+                //spaceMatrix.linkedCube.gameObject.SetActive(false);
             }
         }
 
@@ -81,9 +92,6 @@ public class DataSerachService : MonoBehaviour
         Debug.Log($"Closest matrix to {matrix} is {closestMatrix} with distance {minDistance}");
 
 
-        string result = JsonUtility.ToJson(resultMatrixDataArray);
-
-        System.IO.File.WriteAllText("Assets/Streaming Assets/result.json", result);
 
     }
 }

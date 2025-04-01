@@ -60,7 +60,7 @@ public class MatrixData
         Matrix4x4 translationMatrix = Matrix4x4.Translate(new Vector3(offset, offset, offset));
         Matrix4x4 matrix = ToUnityMatrix();
 
-        Matrix4x4 offsetedMatrix = matrix * translationMatrix;
+        Matrix4x4 offsetedMatrix = matrix * translationMatrix;  
 
         return FromUnityMatrix(offsetedMatrix);
     }
