@@ -1,9 +1,11 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 [System.Serializable]
 public class MatrixData
 {
+    public GameObject linkedCube; // Ссылка на куб, который связан с этой матрицей
     // Все 16 полей матрицы 4x4
     public float m00; public float m10; public float m20; public float m30;
     public float m01; public float m11; public float m21; public float m31;
@@ -44,6 +46,24 @@ public class MatrixData
             m33 = matrix.m33
         };
     }
+
+    public override string ToString()
+    { 
+        return $"[{m00}, {m01}, {m02}, {m03}, {m10}, {m11}, {m12}, {m13}, {m20}, {m21}, {m22}, {m23}, {m30}, {m31}, {m32}, {m33}]";
+    
+    }
+
+    public MatrixData DoOffset(float offset)
+    { 
+        // multiply the matrix by a translation matrix
+
+        Matrix4x4 translationMatrix = Matrix4x4.Translate(new Vector3(offset, offset, offset));
+        Matrix4x4 matrix = ToUnityMatrix();
+
+        Matrix4x4 offsetedMatrix = matrix * translationMatrix;
+
+        return FromUnityMatrix(offsetedMatrix);
+    }
 }
 
 // Класс-обертка для десериализации массива матриц
@@ -73,5 +93,15 @@ public class MatrixDataArray
             result[i] = matrices[i].ToUnityMatrix();
         }
         return result;
+    }
+
+    public override string ToString()
+    {
+        string result = "";
+        foreach (var matrix in matrices)
+        {
+            result += matrix.ToString() + " , ";
+        }
+        return $"[{result}]";
     }
 }
