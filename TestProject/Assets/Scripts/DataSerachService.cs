@@ -24,7 +24,7 @@ public class DataSerachService : MonoBehaviour
     {
 
         // sort data by magnitude of position 
-        data.space.matrices.Sort((a, b) => a.ToUnityMatrix().GetPosition().magnitude.CompareTo(b.ToUnityMatrix().GetPosition().magnitude));
+        //data.space.matrices.Sort((a, b) => a.ToUnityMatrix().GetPosition().magnitude.CompareTo(b.ToUnityMatrix().GetPosition().magnitude));
         yield return null;
 
         Debug.Log("Data sorted by magnitude of position");
@@ -36,7 +36,7 @@ public class DataSerachService : MonoBehaviour
         // Поиск данных
         Debug.Log("Data searched started");
 
-        float offset = 0.1f;
+        float offset = 10f;
 
         foreach (var matrix in data.space.matrices)
         {
@@ -44,9 +44,9 @@ public class DataSerachService : MonoBehaviour
 
             yield return SearchInSpace(offsetedMatrix, data);
             Debug.DrawLine(matrix.ToUnityMatrix().GetPosition(), offsetedMatrix.ToUnityMatrix().GetPosition(), Color.yellow, 1f);
-            yield return null;
         }
 
+        yield return null;
 
     }
 
@@ -56,7 +56,7 @@ public class DataSerachService : MonoBehaviour
         float minDistance = float.MaxValue;
         MatrixData closestMatrix = null;
 
-        foreach (var modelMatrix in data.model.matrices)
+        foreach (var modelMatrix in data.space.matrices)
         {
             float distance = Vector3.Distance(matrix.ToUnityMatrix().GetPosition(), modelMatrix.ToUnityMatrix().GetPosition());
             if (distance < minDistance)
@@ -64,14 +64,16 @@ public class DataSerachService : MonoBehaviour
                 minDistance = distance;
                 closestMatrix = modelMatrix;
                 modelMatrix.linkedCube.GetComponent<Renderer>().material.color = Color.green;
+                yield return null;
+                Debug.DrawLine(matrix.ToUnityMatrix().GetPosition(), modelMatrix.ToUnityMatrix().GetPosition(), Color.yellow, 1f);
             }
             else
             {
-                modelMatrix.linkedCube.SetActive(false);    
-                yield return null; 
+                matrix?.linkedCube?.SetActive(false);
             }
         }
 
+        yield return null;
         Debug.Log($"Closest matrix to {matrix} is {closestMatrix} with distance {minDistance}");
 
     }
