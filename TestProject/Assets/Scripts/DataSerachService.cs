@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using Unity.VisualScripting;
 using UnityEditor.Search;
 using UnityEngine;
 
@@ -36,16 +37,17 @@ public class DataSerachService : MonoBehaviour
         // Поиск данных
         Debug.Log("Data searched started");
 
-        float offset = 1f;
+        float offset = 10f;
         resultMatrixDataArray.matrices = new List<MatrixData>();
-        foreach (var matrix in data.space.matrices)
+        for (int i = 0; i < data.model.matrices.Count; i++)
         {
-            var offsetedMatrix = matrix.DoOffset(offset);
+            MatrixData matrix = data.model.matrices[i];
+            MatrixData offsetedMatrix = matrix.DoOffset(offset);
 
             yield return SearchInSpace(offsetedMatrix, data, offset);
-            Debug.DrawLine(matrix.ToUnityMatrix().GetPosition(), offsetedMatrix.ToUnityMatrix().GetPosition(), Color.yellow, 1f);
 
-            float percent = (float)data.space.matrices.IndexOf(matrix) / data.space.matrices.Count;
+
+            float percent = (float)(i / data.space.matrices.Count);
             Debug.Log($"Data searched {percent * 100}%");
         }
 
@@ -63,35 +65,30 @@ public class DataSerachService : MonoBehaviour
     }
 
     [SerializeField] MatrixDataArray resultMatrixDataArray = new MatrixDataArray();
-    private IEnumerator SearchInSpace(MatrixData matrix, Data data, float offset)
+    private IEnumerator SearchInSpace(MatrixData targetMatrix, Data data, float offset)
     {
-        // search for the closest matrix in the model
         float minDistance = offset;
         MatrixData closestMatrix = null;
 
         foreach (var spaceMatrix in data.space.matrices)
         {
-            float distance = Vector3.Distance(matrix.ToUnityMatrix().GetPosition(), spaceMatrix.ToUnityMatrix().GetPosition()); // ну тут все печально
-            if (distance < minDistance)
+            float distance = Vector3.Distance(targetMatrix.ToUnityMatrix().GetPosition(), spaceMatrix.ToUnityMatrix().GetPosition()); // ну тут все печально
+            if (distance <= minDistance)
             {
-                minDistance = distance;
                 closestMatrix = spaceMatrix;
-                spaceMatrix.linkedCube.GetComponent<Renderer>().material.color = Color.green;
-                yield return null;
-                Debug.DrawLine(matrix.ToUnityMatrix().GetPosition(), spaceMatrix.ToUnityMatrix().GetPosition(), Color.yellow, 1f);
+                closestMatrix.linkedCube.GetComponent<Renderer>().material.color = Color.green;
 
-                resultMatrixDataArray.matrices.Add(spaceMatrix);
+                Debug.DrawLine(targetMatrix.ToUnityMatrix().GetPosition(), closestMatrix.ToUnityMatrix().GetPosition(), Color.yellow, 1f);
+
+                resultMatrixDataArray.matrices.Add(closestMatrix);
             }
             else
             {
-                //spaceMatrix.linkedCube.gameObject.SetActive(false);
+                continue;
             }
         }
 
+
         yield return null;
-        Debug.Log($"Closest matrix to {matrix} is {closestMatrix} with distance {minDistance}");
-
-
-
     }
 }
